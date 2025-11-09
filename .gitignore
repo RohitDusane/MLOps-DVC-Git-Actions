@@ -1,7 +1,9 @@
 venv/
 __pycache__
 logs/
-artifacts/
+artifacts/raw
+artifacts/processed
+artifacts/models
 catboost_info/
 git_ops/
 MLOPS_PROJECT_1.egg-info/
