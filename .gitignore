@@ -1,0 +1,8 @@
+venv/
+__pycache__
+logs/
+artifacts/
+catboost_info/
+git_ops/
+MLOPS_PROJECT_1.egg-info/
+research/

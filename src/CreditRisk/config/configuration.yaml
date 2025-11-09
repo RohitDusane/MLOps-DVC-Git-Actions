@@ -1,0 +1,41 @@
+# Congifuration details for the project
+
+data_ingestion:
+  bucket_name: "my_credit_buck"
+  bucket_file_names:
+    - "train.csv"
+    - "test.csv"
+  test_ratio: 0.20
+  val_ratio: 0.30
+  random_state: 24
+
+data_preprocessing:
+  categorical_columns:
+    - 'gender' 
+    - 'owns_car' 
+    - 'owns_house' 
+    - 'occupation_type'
+    - 'credit_card_default'
+  numerical_columns:
+    - 'age'
+    - 'no_of_children'
+    - 'net_yearly_income'
+    - 'no_of_days_employed'
+    - 'total_family_members'
+    - 'migrant_worker'
+    - 'yearly_debt_payments'
+    - 'credit_limit'
+    - 'credit_limit_used(%)'
+    - 'credit_score'
+    - 'prev_defaults'
+    - 'default_in_last_6months'
+  skewness_threshold: 0.75
+  no_of_features : 10
+
+model_training:
+  set_tracking_uri: 'http://127.0.0.1:5000'
+  experiment_name: 'Classification'
+  top_n: 3
+  n_iter: 5
+  cv_folds: 3
+  scoring: 'roc_auc'

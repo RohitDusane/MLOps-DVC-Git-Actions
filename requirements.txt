@@ -1,0 +1,32 @@
+# =============================
+# Core dependencies
+# =============================
+scikit-learn
+pandas
+numpy
+matplotlib
+seaborn
+joblib
+mlflow
+dvc
+dagshub
+dvc-gs
+google-cloud-storage
+flask
+python-dotenv
+python-box
+pyyaml
+tqdm
+ensure
+types-PyYAML
+scipy
+ipykernel
+
+# =============================
+# ML-related libraries
+# =============================
+lightgbm
+imbalanced-learn
+catboost
+xgboost
+statsmodels
