@@ -30,45 +30,50 @@ from scipy.stats import randint,uniform
 class ModelTraining:
     def __init__(self, train_path, val_path, model_dir, config):
         self.config = config['model_training']
-        self.train_path = train_path
-        self.top_n = self.config['top_n']
-        self.val_path = val_path
-        self.model_dir = model_dir
+        self.train_path = PROCESSED_TRAIN_DATA_PATH_pre
+        self.val_path = PROCESSED_VAL_DATA_PATH_pre
+        self.model_dir = MODEL_OUTPUT_PATH
         self.params_dist = LIGHTGM_PARAMS
         self.random_search_params = RANDOM_SEARCH_PARAMS
         self.model_cm_dir = os.path.join(self.model_dir,'images')
+        self.top_n = self.config['top_n']
         self.model_base_dir = os.path.join(self.model_dir,'base')
         self.model_tuned_dir = os.path.join(self.model_dir,'tuned')
         self.model_metrics_dir = os.path.join(self.model_dir,'metrics')
 
         if not os.path.exists(self.model_dir):
             os.makedirs(self.model_dir)
-        if not os.path.exists(self.model_metrics_dir):
-            os.makedirs(self.model_metrics_dir)
-
-        
 
     def load_split_data(self):
         """Load - SPLIT data into X/y"""
         try:
             logging.info(f"Loading TRAIN data: {self.train_path}")
+            # Only select the features that should be used for training
+            feature_columns = [
+                "credit_score", "credit_limit_used", "prev_defaults", 
+                "default_in_last_6months", "no_of_days_employed", "yearly_debt_payments", 
+                "age", "net_yearly_income", "credit_limit", "owns_car"
+            ]
+
+            X_train = train_df[feature_columns]  # Explicitly use only these features
+            y_train = train_df['credit_card_default']
             train_df = load_data(self.train_path)
             val_df = load_data(self.val_path)
             # Splitting
-            X_train = train_df.drop(columns=['credit_card_default'], axis=1)
+            X_train = train_df.drop(columns=['credit_card_default'], axis=1)  # Store as class attribute
             y_train = train_df['credit_card_default']
-            X_val = val_df.drop(columns=['credit_card_default'], axis=1)
+            X_val = val_df.drop(columns=['credit_card_default'], axis=1)  # Store as class attribute
             y_val = val_df['credit_card_default']
             logging.info("Data splitted successfully for Model Training")
             return X_train, y_train, X_val, y_val
         except Exception as e:
-            logging.error("❌ Error laoding-splitting data")
+            logging.error("❌ Error loading-splitting data")
             raise CustomException(str(e))
         
        
         
     def train_lgbm(self,X_train,y_train):
-        """TRAIN BASELINE MODELS"""
+        """Train LightGBM with RandomizedSearchCV"""
         try:
             logging.info("Intializing our model")
 
@@ -87,8 +92,6 @@ class ModelTraining:
                 scoring=self.random_search_params["scoring"]
             )
 
-            logging.info("Starting our Hyperparamter tuning")
-
             random_search.fit(X_train,y_train)
 
             logging.info("Hyperparamter tuning completed")
@@ -98,7 +101,7 @@ class ModelTraining:
 
             logging.info(f"Best paramters are : {best_params}")
 
-            return best_lgbm_model
+            return best_lgbm_model, best_params
         
         except Exception as e:
             logging.error(f"Error while training model: {str(e)}")
@@ -123,7 +126,10 @@ class ModelTraining:
                 'accuracy': accuracy_score(y_val, y_pred),
                 'f1': f1_score(y_val, y_pred),
                 'precision': precision_score(y_val, y_pred),
-                'recall': recall_score(y_val, y_pred)
+                'recall': recall_score(y_val, y_pred),
+                'roc_auc': roc_auc_score(y_val, y_prob),
+                'log_loss': log_loss(y_val, y_prob),
+                'class_report': classification_report(y_val, y_pred)
             }
 
             # ROC AUC
@@ -136,6 +142,7 @@ class ModelTraining:
             print(f"F1 Score: {metrics['f1']}")
             print(f"Precision: {metrics['precision']}")
             print(f"Recall: {metrics['recall']}")
+            print(f"Classification Report: {metrics['class_report']}")
 
             if 'roc_auc' in metrics:
                 print(f"ROC AUC: {metrics['roc_auc']}")
@@ -200,30 +207,49 @@ class ModelTraining:
 
 
     def train_run(self):
+        """Main method for running the model pipeline"""
         try:
-            # logging.info("Model training pipeline started.")
-            
-            # Step 1: Baseline models training + evaluation + logging
-            X_train,y_train,X_val,y_val =self.load_split_data()
-            best_lgbm_model = self.train_lgbm(X_train,y_train)
-            metrics = self.evaluate_model(best_lgbm_model ,X_val , y_val)
-            self.save_best_model({
-                'model_name': 'LGBM',  # model name here
-                'model': best_lgbm_model
-            })
+            with mlflow.start_run():
+                logging.info("Starting our Model Training pipeline")
 
-            logging.info('Model Training Pipeline Completed...')
+                logging.info("Starting our MLFLOW experimentation")
+
+                logging.info("Logging the training and testing datset to MLFLOW")
+                mlflow.log_artifact(self.train_path , artifact_path="datasets")
+                mlflow.log_artifact(self.val_path , artifact_path="datasets")
+
+                # logging.info("Model training pipeline started.")
+                
+                # Step 1: Baseline models training + evaluation + logging
+                X_train, y_train, X_val, y_val = self.load_split_data()
+                best_lgbm_model, best_params = self.train_lgbm(X_train,y_train)
+                metrics = self.evaluate_model(best_lgbm_model ,X_val , y_val)
+                # # Log the results to MLflow
+                # self.log_mlflow(best_lgbm_model, metrics, best_params)
+
+                self.save_best_model({
+                    'model_name': 'LGBM',  # model name here
+                    'model': best_lgbm_model
+                })
+
+                logging.info("Logging the model into MLFLOW")
+                mlflow.log_artifact(self.model_dir)
+
+                logging.info("Logging Params and metrics to MLFLOW")
+                mlflow.log_params(best_lgbm_model.get_params())
+                mlflow.log_metrics(metrics)
+
+                logging.info("Model Training sucesfullly completed")
         except Exception as e:
             logging.error("❌ Error 'Model Training")
             raise CustomException(str(e))
         
     
-# valing
-# if __name__=='__main__':
-#     logging.info('Step 3 - Model Training Pipeline')
-#     config = read_yaml(CONFIG_PATH)
-#     model_trainer = ModelTraining(PROCESSED_TRAIN_DATA_PATH, PROCESSED_VAL_DATA_PATH,
-#                                   MODEL_OUTPUT_PATH, config)
-#     model_trainer.train_run()
+if __name__=='__main__':
+    logging.info('Step 3 - Model Training Pipeline')
+    config = read_yaml(CONFIG_PATH)
+    model_trainer = ModelTraining(PROCESSED_TRAIN_DATA_PATH_pre, PROCESSED_VAL_DATA_PATH_pre,
+                                  MODEL_OUTPUT_PATH, config)
+    model_trainer.train_run()
     
             

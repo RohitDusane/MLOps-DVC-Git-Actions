@@ -25,6 +25,13 @@ PROCESSED_TRAIN_DATA_PATH = PROCESSED_DATA_DIR / 'processed_train.csv'
 PROCESSED_VAL_DATA_PATH = PROCESSED_DATA_DIR / 'processed_val.csv'
 PROCESSED_TEST_DATA_PATH = PROCESSED_DATA_DIR / 'processed_test.csv'
 
+PROCESSED_DIR_pre = Path('artifacts/prepro')
+PROCESSED_DATA_DIR_pre = PROCESSED_DIR_pre / 'data'
+PROCESSED_TRAIN_DATA_PATH_pre = PROCESSED_DATA_DIR_pre / 'processed_train.csv'
+PROCESSED_VAL_DATA_PATH_pre = PROCESSED_DATA_DIR_pre / 'processed_val.csv'
+PROCESSED_TEST_DATA_PATH_pre = PROCESSED_DATA_DIR_pre / 'processed_test.csv'
+
+
 # =======================================
 # ========= MODEL TRAINING ==============
 # =======================================

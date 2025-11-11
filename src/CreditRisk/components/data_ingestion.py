@@ -8,13 +8,6 @@ from src.CreditRisk.utils.common import read_yaml
 
 from sklearn.model_selection import train_test_split
 
-# import yaml
-# from pathlib import Path
-
-# CONFIG_PATH = Path("configuration.yaml")
-
-# with open(CONFIG_PATH, "r") as file:
-#     config = yaml.safe_load(file)
 
 class DataIngestion:
     def __init__(self, config):

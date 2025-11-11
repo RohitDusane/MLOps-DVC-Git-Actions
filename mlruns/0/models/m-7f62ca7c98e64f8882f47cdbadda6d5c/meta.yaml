@@ -1,0 +1,10 @@
+artifact_location: file:///E:/_DataScienc_KNaik/MLOPS/GIT_ACT/Project1/mlruns/0/models/m-7f62ca7c98e64f8882f47cdbadda6d5c/artifacts
+creation_timestamp: 1762771072976
+experiment_id: '0'
+last_updated_timestamp: 1762771085175
+model_id: m-7f62ca7c98e64f8882f47cdbadda6d5c
+model_type: null
+name: model
+source_run_id: 934d307d40e84322b72d0a148aa4df72
+status: 2
+status_message: null

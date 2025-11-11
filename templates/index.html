@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credit Card Default Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .form-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .form-container label {
+            font-weight: bold;
+            color: #333;
+            display: block;
+            margin: 10px 0 5px;
+        }
+        .form-container input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+        .form-container .input-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .form-container .input-group input {
+            width: 100%; /* Ensures inputs fill the space in the columns */
+        }
+        .form-container .submit-btn {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+        .form-container .submit-btn:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Credit Card Default Risk Prediction</h1>
+    <div class="form-container">
+        <form action="/predict" method="post">
+            <div class="input-group">
+                <div>
+                    <label for="credit_score">Credit Score:</label>
+                    <input type="text" name="credit_score" required pattern="\d+" title="Please enter a valid credit score">
+
+                    <label for="credit_limit_used">Credit Limit Used (%):</label>
+                    <input type="text" name="credit_limit_used" required pattern="\d+" title="Please enter a valid percentage">
+
+                    <label for="prev_defaults">Previous Defaults:</label>
+                    <input type="text" name="prev_defaults" required pattern="\d+" title="Enter a number">
+
+                    <label for="default_in_last_6months">Default in Last 6 Months:</label>
+                    <input type="text" name="default_in_last_6months" required pattern="\d+" title="Enter 1 for Yes, 0 for No">
+
+                    <label for="no_of_days_employed">Number of Days Employed:</label>
+                    <input type="text" name="no_of_days_employed" required pattern="\d+" title="Enter a valid number">
+
+                </div>
+                <div>
+                    <label for="yearly_debt_payments">Yearly Debt Payments:</label>
+                    <input type="text" name="yearly_debt_payments" required pattern="\d+" title="Enter a valid amount">
+
+                    <label for="age">Age:</label>
+                    <input type="text" name="age" required pattern="\d+" title="Enter a valid age">
+
+                    <label for="net_yearly_income">Net Yearly Income:</label>
+                    <input type="text" name="net_yearly_income" required pattern="\d+" title="Enter a valid income">
+                    
+                    <label for="credit_limit">Credit Limit:</label>
+                    <input type="text" name="credit_limit" required pattern="\d+" title="Enter a valid limit">
+
+                    <label for="owns_car">Owns Car (1=Yes, 0=No):</label>
+                    <input type="text" name="owns_car" required pattern="0|1" title="Enter 1 for Yes, 0 for No">
+                </div>
+            </div>
+            <input type="submit" value="Predict Default Risk" class="submit-btn">
+        </form>
+    </div>
+</body>
+</html>

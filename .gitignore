@@ -29,5 +29,5 @@ MLOPS_PROJECT_1.egg-info/
 research/
 
 # Ignore __init__.py files across all subdirectories and the root dir
-__init__.py
-**/__init__.py
+# __init__.py
+# **/__init__.py

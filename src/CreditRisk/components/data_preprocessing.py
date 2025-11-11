@@ -50,14 +50,6 @@ class DataPreprocessing:
             cat_cols = self.config['categorical_columns']
             num_cols = self.config['numerical_columns']
 
-            # # Handle missing values before any transformations
-            # df = self.handle_missing_values(df, cat_cols, num_cols)
-            # df= self.handle_categroical_features(df, cat_cols)
-            # df= self.handle_numerical_features(df, num_cols)
-            # df = self.balance_data(df)
-
-            # df = self.select_top_n_features(df)
-
             return df
 
         except Exception as e:

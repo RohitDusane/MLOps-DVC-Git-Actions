@@ -1,0 +1,14 @@
+artifact_uri: file:///E:/_DataScienc_KNaik/MLOPS/GIT_ACT/Project1/mlruns/0/29433fc09e8c424ea372e1989ca85f17/artifacts
+end_time: 1762771287463
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 29433fc09e8c424ea372e1989ca85f17
+run_name: fun-frog-436
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1762771275378
+status: 4
+tags: []
+user_id: ADMIN

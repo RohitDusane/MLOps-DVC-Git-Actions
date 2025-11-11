@@ -1,0 +1,14 @@
+artifact_uri: file:///E:/_DataScienc_KNaik/MLOPS/GIT_ACT/Project1/mlruns/0/08bbcefbe27d4fee801fe127bfe280fd/artifacts
+end_time: 1762770919241
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 08bbcefbe27d4fee801fe127bfe280fd
+run_name: abrasive-calf-237
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1762770885703
+status: 4
+tags: []
+user_id: ADMIN

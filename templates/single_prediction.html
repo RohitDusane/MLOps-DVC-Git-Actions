@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credit Risk Prediction</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.3/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto py-10">
+        <div class="bg-white shadow-md rounded-lg p-8 max-w-lg mx-auto">
+            <h1 class="text-2xl font-bold mb-6 text-center">Single Credit Risk Prediction</h1>
+            <form method="POST" action="/predict_single">
+                <!-- Input fields for each feature -->
+                <div class="mb-4">
+                    <label for="credit_score" class="block text-sm font-medium text-gray-700">Credit Score</label>
+                    <input type="number" id="credit_score" name="credit_score" min="300" max="850" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required placeholder="Enter credit score">
+                </div>
+                <div class="mb-4">
+                    <label for="credit_limit_used" class="block text-sm font-medium text-gray-700">Credit Limit Used (%)</label>
+                    <input type="number" step="any" id="credit_limit_used" name="credit_limit_used" min="0" max="100" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required placeholder="Enter percentage">
+                </div>
+                <div class="mb-4">
+                    <label for="prev_defaults" class="block text-sm font-medium text-gray-700">Previous Defaults</label>
+                    <input type="number" id="prev_defaults" name="prev_defaults" min="0" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required placeholder="Enter number of defaults">
+                </div>
+                <div class="mb-4">
+                    <label for="default_in_last_6months" class="block text-sm font-medium text-gray-700">Default in Last 6 Months</label>
+                    <input type="number" id="default_in_last_6months" name="default_in_last_6months" min="0" max="1" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required placeholder="Enter 0 or 1">
+                </div>
+                <div class="mb-4">
+                    <label for="no_of_days_employed" class="block text-sm font-medium text-gray-700">Number of Days Employed</label>
+                    <input type="number" id="no_of_days_employed" name="no_of_days_employed" min="0" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required placeholder="Enter days employed">
+                </div>
+                <div class="mb-4">
+                    <label for="yearly_debt_payments" class="block text-sm font-medium text-gray-700">Yearly Debt Payments</label>
+                    <input type="number" step="any" id="yearly_debt_payments" name="yearly_debt_payments" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required placeholder="Enter yearly debt payments">
+                </div>
+                <div class="mb-4">
+                    <label for="age" class="block text-sm font-medium text-gray-700">Age</label>
+                    <input type="number" id="age" name="age" min="18" max="120" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required placeholder="Enter age">
+                </div>
+                <div class="mb-4">
+                    <label for="net_yearly_income" class="block text-sm font-medium text-gray-700">Net Yearly Income</label>
+                    <input type="number" step="any" id="net_yearly_income" name="net_yearly_income" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required placeholder="Enter yearly income">
+                </div>
+                <div class="mb-4">
+                    <label for="credit_limit" class="block text-sm font-medium text-gray-700">Credit Limit</label>
+                    <input type="number" id="credit_limit" name="credit_limit" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required placeholder="Enter credit limit">
+                </div>
+                <div class="mb-4">
+                    <label for="owns_car" class="block text-sm font-medium text-gray-700">Owns Car</label>
+                    <input type="number" id="owns_car" name="owns_car" min="0" max="1" class="mt-1 block w-full p-2 border border-gray-300 rounded-md" required placeholder="Enter 0 or 1">
+                </div>
+
+                <div class="flex justify-center mt-6">
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md shadow-md">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
