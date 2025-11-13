@@ -1,0 +1,5 @@
+.git/
+*.log
+*.pyc
+node_modules/
+git_ops/

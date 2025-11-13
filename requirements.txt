@@ -21,7 +21,7 @@ ensure
 types-PyYAML
 scipy
 ipykernel
-
+gunicorn
 # =============================
 # ML-related libraries
 # =============================
