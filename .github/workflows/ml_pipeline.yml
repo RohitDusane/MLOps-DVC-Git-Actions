@@ -34,7 +34,7 @@ jobs:
 
       - name: Run data processing
         run: |
-          python src.CreditRisk.components.prepro.py  # Your data preprocessing script
+          PYTHONPATH=src python src/CreditRisk/components/prepro.py # Your data preprocessing script
 
       - name: Run model training
         run: |
