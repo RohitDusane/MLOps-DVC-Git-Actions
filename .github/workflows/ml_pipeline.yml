@@ -37,19 +37,22 @@ jobs:
         run: |
           ls -R  # List all files to check if 'src' is present
 
+      # Run data preprocessing (Ensure PYTHONPATH includes 'src')
       - name: Run data processing
         run: |
-          PYTHONPATH=src python src/CreditRisk/components/data_preprocessing.py # Your data preprocessing script
-        working-directory: src
+          PYTHONPATH=src python src/CreditRisk/components/data_preprocessing.py  # Your data preprocessing script
 
+      # Run model training
       - name: Run model training
         run: |
           python src/CreditRisk/components/model_training.py  # Your model training script
 
+      # Build Docker image
       - name: Build Docker image
         run: |
           docker build -t ${{ env.IMAGE_TAG }} .
 
+      # Push Docker image to Google Container Registry (GCR)
       - name: Push Docker image to Google Container Registry (GCR)
         run: |
           docker push ${{ env.IMAGE_TAG }}
@@ -76,4 +79,3 @@ jobs:
         run: |
           gcloud app browse --quiet  # Opens the deployed application (optional, useful for debugging)
           gcloud app deploy app.yaml --quiet  # Deploys the app using your app.yaml file
-
