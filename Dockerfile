@@ -7,7 +7,7 @@ WORKDIR /app
 # Install system build dependencies (gcc, g++, etc.) for compiling scikit-learn from source if necessary
 RUN apt-get update && apt-get install -y \
     build-essential \
-    libatlas-dev \
+    libatlas-base-dev \
     libopenblas-dev \
     liblapack-dev \
     python3-dev \
