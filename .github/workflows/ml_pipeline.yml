@@ -32,9 +32,15 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
+      # Ensure the src directory is available
+      - name: List repository files
+        run: |
+          ls -R  # List all files to check if 'src' is present
+
       - name: Run data processing
         run: |
           PYTHONPATH=src python src/CreditRisk/components/data_preprocessing.py # Your data preprocessing script
+        working-directory: src
 
       - name: Run model training
         run: |
