@@ -47,7 +47,7 @@ jobs:
       - name: Run model training
         run: |
           export PYTHONPATH=$(pwd)/src:$PYTHONPATH
-          python src/CreditRisk/components/train.py  # Your model training script
+          python src/CreditRisk/components/model_training.py  # Your model training script
 
       # Build Docker image
       - name: Build Docker image
