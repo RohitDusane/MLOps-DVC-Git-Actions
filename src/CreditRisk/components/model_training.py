@@ -30,9 +30,9 @@ from scipy.stats import randint,uniform
 class ModelTraining:
     def __init__(self, train_path, val_path, model_dir, config):
         self.config = config['model_training']
-        self.train_path = PROCESSED_TRAIN_DATA_PATH_pre
-        self.val_path = PROCESSED_VAL_DATA_PATH_pre
-        self.model_dir = MODEL_OUTPUT_PATH
+        self.train_path = train_path 
+        self.val_path = val_path  
+        self.model_dir = model_dir
         self.params_dist = LIGHTGM_PARAMS
         self.random_search_params = RANDOM_SEARCH_PARAMS
         self.model_cm_dir = os.path.join(self.model_dir,'images')
@@ -48,7 +48,10 @@ class ModelTraining:
         """Load - SPLIT data into X/y"""
         try:
             logging.info(f"Loading TRAIN data: {self.train_path}")
-            # Only select the features that should be used for training
+            # Load data first
+            train_df = load_data(self.train_path)
+            val_df = load_data(self.val_path)
+            
             feature_columns = [
                 "credit_score", "credit_limit_used", "prev_defaults", 
                 "default_in_last_6months", "no_of_days_employed", "yearly_debt_payments", 
@@ -57,18 +60,15 @@ class ModelTraining:
 
             X_train = train_df[feature_columns]  # Explicitly use only these features
             y_train = train_df['credit_card_default']
-            train_df = load_data(self.train_path)
-            val_df = load_data(self.val_path)
-            # Splitting
-            X_train = train_df.drop(columns=['credit_card_default'], axis=1)  # Store as class attribute
-            y_train = train_df['credit_card_default']
-            X_val = val_df.drop(columns=['credit_card_default'], axis=1)  # Store as class attribute
+            X_val = val_df[feature_columns]  # Explicitly use only these features for validation
             y_val = val_df['credit_card_default']
+
             logging.info("Data splitted successfully for Model Training")
             return X_train, y_train, X_val, y_val
         except Exception as e:
             logging.error("❌ Error loading-splitting data")
             raise CustomException(str(e))
+
         
        
         
@@ -153,6 +153,15 @@ class ModelTraining:
             metrics_filename = f"{model.__class__.__name__}_metrics_{stage}.json"
             metrics_filepath = os.path.join(self.model_metrics_dir, metrics_filename)
 
+            # Save classification report to a text file
+            classification_report_str = metrics['class_report']
+            report_file_path = os.path.join(self.model_metrics_dir, f'{model.__class__.__name__}_class_report.txt')
+            with open(report_file_path, 'w') as f:
+                f.write(classification_report_str)
+
+            # Log classification report as artifact in MLflow
+            mlflow.log_artifact(report_file_path)
+
             # Ensure the target directory exists
             os.makedirs(os.path.dirname(metrics_filepath), exist_ok=True)
 
@@ -214,34 +223,40 @@ class ModelTraining:
 
                 logging.info("Starting our MLFLOW experimentation")
 
-                logging.info("Logging the training and testing datset to MLFLOW")
-                mlflow.log_artifact(self.train_path , artifact_path="datasets")
-                mlflow.log_artifact(self.val_path , artifact_path="datasets")
+                logging.info("Logging the training and testing dataset to MLFLOW")
+                mlflow.log_artifact(self.train_path, artifact_path="datasets")
+                mlflow.log_artifact(self.val_path, artifact_path="datasets")
 
-                # logging.info("Model training pipeline started.")
-                
                 # Step 1: Baseline models training + evaluation + logging
                 X_train, y_train, X_val, y_val = self.load_split_data()
-                best_lgbm_model, best_params = self.train_lgbm(X_train,y_train)
-                metrics = self.evaluate_model(best_lgbm_model ,X_val , y_val)
-                # # Log the results to MLflow
-                # self.log_mlflow(best_lgbm_model, metrics, best_params)
+                best_lgbm_model, best_params = self.train_lgbm(X_train, y_train)
+                metrics = self.evaluate_model(best_lgbm_model, X_val, y_val)
 
+                # Save the best model
                 self.save_best_model({
-                    'model_name': 'LGBM',  # model name here
+                    'model_name': 'LGBM',  # Model name here
                     'model': best_lgbm_model
                 })
 
-                logging.info("Logging the model into MLFLOW")
-                mlflow.log_artifact(self.model_dir)
+                # Log the model to MLflow
+                model_path = os.path.join(self.model_dir, 'LGBM_best.pkl')
+                mlflow.log_artifact(model_path)
 
-                logging.info("Logging Params and metrics to MLFLOW")
+                # Log parameters and metrics to MLflow
                 mlflow.log_params(best_lgbm_model.get_params())
                 mlflow.log_metrics(metrics)
 
-                logging.info("Model Training sucesfullly completed")
+                # Log classification report to MLflow
+                classification_report_str = metrics['class_report']
+                report_file_path = os.path.join(self.model_metrics_dir, 'LGBM_class_report.txt')
+                with open(report_file_path, 'w') as f:
+                    f.write(classification_report_str)
+
+                mlflow.log_artifact(report_file_path)
+
+                logging.info("Model Training successfully completed")
         except Exception as e:
-            logging.error("❌ Error 'Model Training")
+            logging.error("❌ Error during Model Training")
             raise CustomException(str(e))
         
     
