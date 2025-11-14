@@ -34,11 +34,11 @@ jobs:
 
       - name: Run data processing
         run: |
-          PYTHONPATH=src python src/CreditRisk/components/prepro.py # Your data preprocessing script
+          PYTHONPATH=src python src/CreditRisk/components/data_preprocessing.py # Your data preprocessing script
 
       - name: Run model training
         run: |
-          python src.CreditRisk.components.train_model.py  # Your model training script
+          python src/CreditRisk/components/model_training.py  # Your model training script
 
       - name: Build Docker image
         run: |
