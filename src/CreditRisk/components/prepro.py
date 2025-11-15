@@ -16,11 +16,7 @@ from src.CreditRisk.exception import CustomException
 from src.CreditRisk.config.path_config import *
 from src.CreditRisk.utils.common import read_yaml,load_data
 
-from sklearn.preprocessing import StandardScaler,LabelEncoder, OneHotEncoder
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.impute import SimpleImputer
-
-from imblearn.over_sampling import SMOTE
 from scipy.stats import skew
 
 class DataPreprocessing:

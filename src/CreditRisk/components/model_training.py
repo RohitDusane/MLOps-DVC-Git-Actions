@@ -22,7 +22,7 @@ import mlflow
 import mlflow.sklearn
 from mlflow.models import infer_signature
 from urllib.parse import urlparse
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 from scipy.special import expit
 from scipy.stats import randint,uniform
 
@@ -290,11 +290,11 @@ class ModelTraining:
             raise CustomException(str(e))
         
     
-if __name__=='__main__':
-    logging.info('Step 3 - Model Training Pipeline')
-    config = read_yaml(CONFIG_PATH)
-    model_trainer = ModelTraining(PROCESSED_TRAIN_DATA_PATH, PROCESSED_VAL_DATA_PATH,
-                                  MODEL_OUTPUT_PATH, config)
-    model_trainer.train_run()
+# if __name__=='__main__':
+#     logging.info('Step 3 - Model Training Pipeline')
+#     config = read_yaml(CONFIG_PATH)
+#     model_trainer = ModelTraining(PROCESSED_TRAIN_DATA_PATH, PROCESSED_VAL_DATA_PATH,
+#                                   MODEL_OUTPUT_PATH, config)
+#     model_trainer.train_run()
     
             
