@@ -14,13 +14,13 @@ dagshub
 dvc-gs
 google-cloud-storage
 flask
-# python-dotenv
-# python-box
+python-dotenv
+python-box
 pyyaml
-# tqdm
-# ensure
+tqdm
+ensure
 types-PyYAML
-# scipy
+scipy
 # ipykernel
 gunicorn
 # =============================
