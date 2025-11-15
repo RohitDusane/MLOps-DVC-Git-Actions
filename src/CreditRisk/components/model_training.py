@@ -55,7 +55,7 @@ class ModelTraining:
             val_df = load_data(self.val_path)
             
             feature_columns = [
-                "credit_score", "credit_limit_used", "prev_defaults", 
+                "credit_score", "credit_limit_used(%)", "prev_defaults", 
                 "default_in_last_6months", "no_of_days_employed", "yearly_debt_payments", 
                 "age", "net_yearly_income", "credit_limit", "owns_car"
             ]
@@ -119,8 +119,8 @@ class ModelTraining:
             # Get probabilities for ROC AUC / log_loss
             if hasattr(model, 'predict_proba'):
                 y_prob_full = model.predict_proba(X_val)
-                y_prob = y_prob_full[:,1]
-            elif hasattr(model, 'decision-function'):
+                y_prob = y_prob_full[:, 1]
+            elif hasattr(model, 'decision_function'):
                 y_prob = model.decision_function(X_val)
                 y_prob = expit(y_prob)
 
@@ -130,21 +130,14 @@ class ModelTraining:
                 'precision': precision_score(y_val, y_pred),
                 'recall': recall_score(y_val, y_pred),
                 'roc_auc': roc_auc_score(y_val, y_prob),
-                'log_loss': log_loss(y_val, y_prob),
-                'class_report': classification_report(y_val, y_pred)
-            }
-
-            # ROC AUC
-            if y_prob is not None:
-                metrics['roc_auc'] = roc_auc_score(y_val, y_prob)
-                metrics['log_loss'] = log_loss(y_val, y_prob_full if hasattr(model, "predict_proba") else y_prob)
+                'log_loss': log_loss(y_val, y_prob)}
 
             # Print metrics for debugging
             print(f"Accuracy: {metrics['accuracy']}")
             print(f"F1 Score: {metrics['f1']}")
             print(f"Precision: {metrics['precision']}")
             print(f"Recall: {metrics['recall']}")
-            print(f"Classification Report: {metrics['class_report']}")
+            # print(f"Classification Report: {metrics['class_report']}")
 
             if 'roc_auc' in metrics:
                 print(f"ROC AUC: {metrics['roc_auc']}")
@@ -155,14 +148,21 @@ class ModelTraining:
             metrics_filename = f"{model.__class__.__name__}_metrics_{stage}.json"
             metrics_filepath = os.path.join(self.model_metrics_dir, metrics_filename)
 
-            # Save classification report to a text file
-            classification_report_str = metrics['class_report']
-            report_file_path = os.path.join(self.model_metrics_dir, f'{model.__class__.__name__}_class_report.txt')
-            with open(report_file_path, 'w') as f:
-                f.write(classification_report_str)
+            # Ensure the target directory exists before saving
+            os.makedirs(os.path.dirname(metrics_filepath), exist_ok=True)
 
-            # Log classification report as artifact in MLflow
-            mlflow.log_artifact(report_file_path)
+            # Save classification report to a text file (log as artifact, not metric)
+            # classification_report_str = classification_report(y_val, y_pred)
+            # report_file_path = os.path.join(self.model_metrics_dir, f'{model.__class__.__name__}_class_report.txt')
+
+            # # Ensure the target directory exists before saving the report
+            # os.makedirs(os.path.dirname(report_file_path), exist_ok=True)
+
+            # with open(report_file_path, 'w') as f:
+            #     f.write(classification_report_str)
+
+            # Log classification report as artifact in MLflow (NOT as a metric)
+            # mlflow.log_artifact(report_file_path)
 
             # Ensure the target directory exists
             os.makedirs(os.path.dirname(metrics_filepath), exist_ok=True)
@@ -170,23 +170,26 @@ class ModelTraining:
             # Save metrics as a JSON file
             with open(metrics_filepath, 'w') as f:
                 json.dump(metrics, f, indent=4)
-            
+
+            # Log metrics to MLflow
+            for metric_name, metric_value in metrics.items():
+                mlflow.log_metric(metric_name, metric_value)
+
             # Save Confusion Matrix
             cm = confusion_matrix(y_val, y_pred)
-            plt.figure(figsize=(6,4))
-            sns.heatmap(cm, annot=True, fmt ='d', cmap='Blues')
+            plt.figure(figsize=(6, 4))
+            sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
             plt.title(f'{model.__class__.__name__} Confusion Matrix ({stage})')
             plt.ylabel('Actual')
             plt.xlabel('Predicted')
             plt.tight_layout()
 
-            if stage=='baseline':
+            if stage == 'baseline':
                 save_path = os.path.join(self.model_base_dir, f'{model.__class__.__name__}_cm.png')
-            # else:
-            #     save_path = os.path.join(self.model_tuned_dir, f'{model.__class__.__name__}_cm.png')
             else:
                 save_path = os.path.join(self.model_cm_dir, f'{model.__class__.__name__}_cm.png')
-            # Ensure the target directory exists
+
+            # Ensure the target directory exists before saving confusion matrix
             os.makedirs(os.path.dirname(save_path), exist_ok=True)
             plt.savefig(save_path)
             plt.close()
@@ -194,29 +197,47 @@ class ModelTraining:
             return metrics
 
         except Exception as e:
-            logging.error("❌ Error laoding-splitting data")
+            logging.error("❌ Error during model evaluation")
             raise CustomException(str(e))
+
         
     
+    # def save_best_model(self, best_model_info):
+    #     logging.info("Saving the model")
+        
+    #     # Extract model name and model from the best_model_info dictionary
+    #     model_name = best_model_info['model_name']
+    #     model = best_model_info['model']
+        
+    #     # Define the model saving path
+    #     model_path = os.path.join(self.model_dir, f'{model_name}_best.pkl')
+    #     joblib.dump(model_name, model_path)
+    #     mlflow.log_artifact(model_path)
+        
+    #     # Ensure the directory exists before saving the model
+    #     os.makedirs(os.path.dirname(model_path), exist_ok=True)
+        
+    #     # Save the model
+    #     joblib.dump(model, model_path)
+    #     logging.info(f'Best Model saved at {model_path}')
+
     def save_best_model(self, best_model_info):
         logging.info("Saving the model")
         
-        # Extract model name and model from the best_model_info dictionary
         model_name = best_model_info['model_name']
         model = best_model_info['model']
         
         # Define the model saving path
         model_path = os.path.join(self.model_dir, f'{model_name}_best.pkl')
-        joblib.dump(model_name, model_path)
+        
+        # Save the model correctly
+        joblib.dump(model, model_path)
         mlflow.log_artifact(model_path)
         
         # Ensure the directory exists before saving the model
         os.makedirs(os.path.dirname(model_path), exist_ok=True)
         
-        # Save the model
-        joblib.dump(model, model_path)
         logging.info(f'Best Model saved at {model_path}')
-
 
 
     def train_run(self):
@@ -224,6 +245,8 @@ class ModelTraining:
         try:
             # mlflow.set_tracking_uri(self.set_tracking_uri)
             # mlflow.set_experiment(self.set_experiment)
+            artifact_dir = MLFLOW_ARTIFACTS
+            os.makedirs(artifact_dir, exist_ok=True)
 
             with mlflow.start_run():
                 logging.info("Starting our Model Training pipeline")
@@ -254,12 +277,12 @@ class ModelTraining:
                 mlflow.log_metrics(metrics)
 
                 # Log classification report to MLflow
-                classification_report_str = metrics['class_report']
-                report_file_path = os.path.join(self.model_metrics_dir, 'LGBM_class_report.txt')
-                with open(report_file_path, 'w') as f:
-                    f.write(classification_report_str)
+                # classification_report_str = metrics['class_report']
+                # report_file_path = os.path.join(self.model_metrics_dir, 'LGBM_class_report.txt')
+                # with open(report_file_path, 'w') as f:
+                #     f.write(classification_report_str)
 
-                mlflow.log_artifact(report_file_path)
+                # mlflow.log_artifact(report_file_path)
 
                 logging.info("Model Training successfully completed")
         except Exception as e:
@@ -270,7 +293,7 @@ class ModelTraining:
 if __name__=='__main__':
     logging.info('Step 3 - Model Training Pipeline')
     config = read_yaml(CONFIG_PATH)
-    model_trainer = ModelTraining(PROCESSED_TRAIN_DATA_PATH_pre, PROCESSED_VAL_DATA_PATH_pre,
+    model_trainer = ModelTraining(PROCESSED_TRAIN_DATA_PATH, PROCESSED_VAL_DATA_PATH,
                                   MODEL_OUTPUT_PATH, config)
     model_trainer.train_run()
     
