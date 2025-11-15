@@ -22,7 +22,7 @@ import mlflow
 import mlflow.sklearn
 from mlflow.models import infer_signature
 from urllib.parse import urlparse
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 from scipy.special import expit
 from scipy.stats import randint,uniform
 
