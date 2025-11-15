@@ -32,11 +32,6 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Ensure the src directory is available
-      # - name: List repository files
-      #   run: |
-      #     ls -R
-
       # Run data preprocessing
       - name: Run data processing
         run: |
@@ -49,10 +44,9 @@ jobs:
           export PYTHONPATH=$(pwd)/src:$PYTHONPATH
           python src/CreditRisk/components/model_training.py
 
-      # Set up Google Cloud credentials for Docker
-      - name: Authenticate Docker to Google Cloud
+      - name: Set up Google Cloud credentials for Docker
         run: |
-          echo ${{ secrets.GCP_SA_KEY }} | gcloud auth activate-service-account --key-file=-
+          echo "${{ secrets.GCP_SA_KEY }}" | gcloud auth activate-service-account --key-file=-
           gcloud auth configure-docker
 
       # Build Docker image
