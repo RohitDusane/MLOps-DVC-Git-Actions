@@ -26,8 +26,6 @@ gunicorn
 # =============================
 # ML-related libraries
 # =============================
-lightgbm
+lightgbm==3.3.2
 imbalanced-learn
-catboost
-xgboost
 statsmodels

@@ -3,3 +3,8 @@
 *.pyc
 node_modules/
 git_ops/
+__pycache__
+*.pyc
+*.pyo
+*.git
+*.gitignore

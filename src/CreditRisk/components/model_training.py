@@ -40,6 +40,8 @@ class ModelTraining:
         self.model_base_dir = os.path.join(self.model_dir,'base')
         self.model_tuned_dir = os.path.join(self.model_dir,'tuned')
         self.model_metrics_dir = os.path.join(self.model_dir,'metrics')
+        self.set_tracking_uri = self.config['set_tracking_uri'] 
+        self.set_experiment = self.config['experiment_name'] 
 
         if not os.path.exists(self.model_dir):
             os.makedirs(self.model_dir)
@@ -205,6 +207,8 @@ class ModelTraining:
         
         # Define the model saving path
         model_path = os.path.join(self.model_dir, f'{model_name}_best.pkl')
+        joblib.dump(model_name, model_path)
+        mlflow.log_artifact(model_path)
         
         # Ensure the directory exists before saving the model
         os.makedirs(os.path.dirname(model_path), exist_ok=True)
@@ -218,6 +222,9 @@ class ModelTraining:
     def train_run(self):
         """Main method for running the model pipeline"""
         try:
+            # mlflow.set_tracking_uri(self.set_tracking_uri)
+            # mlflow.set_experiment(self.set_experiment)
+
             with mlflow.start_run():
                 logging.info("Starting our Model Training pipeline")
 

@@ -1,7 +1,5 @@
 # Use a full Python runtime as a parent image
-# Use official Python image as a base
-# Use official Python image as the base image
-FROM python:3.9-slim
+FROM python:3.10-slim
 
 # Set the working directory in the container
 WORKDIR /app
@@ -12,7 +10,9 @@ RUN apt-get update && apt-get install -y \
     libopenblas-dev \
     python3-dev \
     gfortran \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
 
 # Copy the requirements.txt file into the container
 COPY requirements.txt /app/
@@ -28,3 +28,4 @@ COPY . /app/
 
 # Set the default command to run the application (adjust this if your entry point is different)
 CMD ["python", "app.py"]
+ 

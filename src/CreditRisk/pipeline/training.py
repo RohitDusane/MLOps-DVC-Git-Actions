@@ -25,7 +25,7 @@ def main():
 
         logging.info('>>>>>>>>>> Step 3: MODEL TRAINING <<<<<<<<<<')
         config = read_yaml(CONFIG_PATH)
-        model_trainer = ModelTraining(PROCESSED_TRAIN_DATA_PATH, PROCESSED_VAL_DATA_PATH,
+        model_trainer = ModelTraining(PROCESSED_TRAIN_DATA_PATH_pre, PROCESSED_VAL_DATA_PATH_pre,
                                         MODEL_OUTPUT_PATH, config)
         model_trainer.train_run()
 
