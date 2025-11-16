@@ -1,5 +1,5 @@
 # Use a full Python runtime as a parent image
-FROM python:3.9
+FROM python:3.10-slim-buster
 
 # Set the working directory in the container
 WORKDIR /app
@@ -8,17 +8,17 @@ WORKDIR /app
 COPY . /app
 
 # Install system build dependencies for compiling scikit-learn from source if necessary
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libopenblas-dev \
-    python3-dev \
-    gfortran \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+RUN apt-get update && apt-get install -y
+#     build-essential \
+#     libopenblas-dev \
+#     python3-dev \
+#     gfortran \
+#     && rm -rf /var/lib/apt/lists/* \
+#     && apt-get clean
 
 
 # Copy the requirements.txt file into the container
-COPY requirements.txt /app/
+# COPY requirements.txt /app/
 
 # Upgrade pip
 RUN pip install --upgrade pip
