@@ -269,8 +269,8 @@ class DataPreprocessing:
             raise CustomException(str(e))
 
 # Testing
-# if __name__ == '__main__':
-#     logging.info('STEP 2 - DATA PREPROCESSING Initiated...')
-#     config = read_yaml(CONFIG_PATH)
-#     preprocessor = DataPreprocessing(TRAIN_FILE_PATH, VAL_FILE_PATH, PROCESSED_DIR, config)
-#     preprocessor.preprocess_run()
+if __name__ == '__main__':
+    logging.info('STEP 2 - DATA PREPROCESSING Initiated...')
+    config = read_yaml(CONFIG_PATH)
+    preprocessor = DataPreprocessing(TRAIN_FILE_PATH, VAL_FILE_PATH, PROCESSED_DIR, config)
+    preprocessor.preprocess_run()

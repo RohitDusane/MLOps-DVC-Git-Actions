@@ -1,8 +1,11 @@
 # Use a full Python runtime as a parent image
-FROM python:3.10-slim
+FROM python:3.9
 
 # Set the working directory in the container
 WORKDIR /app
+
+# Copy the rest of the application code into the container
+COPY . /app
 
 # Install system build dependencies for compiling scikit-learn from source if necessary
 RUN apt-get update && apt-get install -y \
@@ -21,10 +24,12 @@ COPY requirements.txt /app/
 RUN pip install --upgrade pip
 
 # Install Python dependencies from requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -e .
 
-# Copy the rest of the application code into the container
-COPY . /app/
+EXPOSE 5000
+
+ENV FLASK_APP=app.py
+
 
 # Set the default command to run the application (adjust this if your entry point is different)
 CMD ["python", "app.py"]

@@ -33,3 +33,4 @@ research/
 # **/__init__.py
 application.md
 mlruns/
+gcp-key.json

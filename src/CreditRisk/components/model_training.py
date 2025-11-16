@@ -290,11 +290,11 @@ class ModelTraining:
             raise CustomException(str(e))
         
     
-# if __name__=='__main__':
-#     logging.info('Step 3 - Model Training Pipeline')
-#     config = read_yaml(CONFIG_PATH)
-#     model_trainer = ModelTraining(PROCESSED_TRAIN_DATA_PATH, PROCESSED_VAL_DATA_PATH,
-#                                   MODEL_OUTPUT_PATH, config)
-#     model_trainer.train_run()
+if __name__=='__main__':
+    logging.info('Step 3 - Model Training Pipeline')
+    config = read_yaml(CONFIG_PATH)
+    model_trainer = ModelTraining(PROCESSED_TRAIN_DATA_PATH, PROCESSED_VAL_DATA_PATH,
+                                  MODEL_OUTPUT_PATH, config)
+    model_trainer.train_run()
     
             

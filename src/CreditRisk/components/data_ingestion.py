@@ -82,9 +82,9 @@ class DataIngestion:
             logging.info(' Data Ingestion Ended..........')
 
 
-# if __name__=='__main__':
-#     # Load config
-#     logging.info('Step 1: Data Ingestion')
-#     config = read_yaml(CONFIG_PATH)
-#     data_ingestion = DataIngestion(config)
-#     data_ingestion.run()
+if __name__=='__main__':
+    # Load config
+    logging.info('Step 1: Data Ingestion')
+    config = read_yaml(CONFIG_PATH)
+    data_ingestion = DataIngestion(config)
+    data_ingestion.run()
