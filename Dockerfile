@@ -27,6 +27,8 @@ RUN pip install --upgrade pip
 # Install Python dependencies from requirements.txt
 RUN pip install --no-cache-dir -e .
 
+RUN python src\CreditRisk\pipeline\training.py
+
 EXPOSE 5000
 
 ENV FLASK_APP=app.py
