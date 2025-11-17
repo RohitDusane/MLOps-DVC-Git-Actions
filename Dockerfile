@@ -29,7 +29,7 @@ RUN pip install --no-cache-dir -e .
 
 RUN python src/CreditRisk/pipeline/training.py
 
-EXPOSE 5000
+EXPOSE 8080
 
 ENV FLASK_APP=app.py
 
