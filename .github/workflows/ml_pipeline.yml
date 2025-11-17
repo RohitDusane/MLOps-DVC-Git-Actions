@@ -23,17 +23,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # - name: Lint code
-      #   run: echo "Linting repo"
+      # Install build dependencies
+      - name: Install build dependencies
+        run: |
+          pip install --upgrade pip
+          pip install wheel cython
 
-      # - name: Set up Google Cloud SDK
-      #   uses: google-github-actions/setup-gcloud@v0.2.0
-      #   with:
-      #     service_account_key: ${{ secrets.GCP_SA_KEY }}  # Correct input for the service account key
-      #     version: latest  # Optional: specify the version of gcloud to install
-      #     export_default_credentials: false
-
-      
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -49,70 +44,49 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install --upgrade pip setuptools
+          pip install -r requirements.txt --prefer-binary
 
-      # Set up Google Cloud Authentication using the service account key
+      # Set up Google Cloud Authentication
       - name: Set up Google Cloud Authentication
         uses: google-github-actions/auth@v3
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}  # Use the secret for authentication
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
           access_token_scopes: https://www.googleapis.com/auth/cloud-platform
 
-      # Run data preprocessing
+      # Run data processing and model training (your existing steps)
       - name: Run data processing
         run: |
           export PYTHONPATH=$(pwd)/src:$PYTHONPATH
           python src/CreditRisk/components/data_preprocessing.py
 
-      # Run model training
       - name: Run model training
         run: |
           export PYTHONPATH=$(pwd)/src:$PYTHONPATH
           python src/CreditRisk/components/model_training.py
 
-      # - name: Set up Google Cloud credentials for Docker
-      #   run: |
-      #     echo "${{ secrets.GCP_SA_KEY }}" | gcloud auth activate-service-account --key-file=-
-      #     gcloud auth configure-docker us-central1-docker.pkg.dev  # Target Artifact Registry
-
-      # # Build Docker image
-      # - name: Build Docker image
-      #   run: |
-      #     docker build -t ${{ env.IMAGE_TAG }} .
-
-      # # Push Docker image to Artifact Registry
-      # - name: Push Docker image to Artifact Registry
-      #   run: |
-      #     docker push ${{ env.IMAGE_TAG }}
-
-      # Set up Google Cloud SDK to interact with Google Cloud services
+      # Docker and Google Cloud Setup (your existing steps)
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v3
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           version: latest
 
-      # Authenticate Docker to use Artifact Registry
       - name: Configure Docker with Artifact Registry
         run: |
           gcloud auth configure-docker us-central1-docker.pkg.dev
 
-      # Set up Docker Buildx for multi-platform builds
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-      
-      # Build Docker image
+
       - name: Build Docker image
         run: |
           docker build -t ${{ env.IMAGE_TAG }} .
 
-      # Push Docker image to Artifact Registry
       - name: Push Docker image to Artifact Registry
         run: |
           docker push ${{ env.IMAGE_TAG }}
 
-      # Step 7: Deploy to Cloud Run
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy credit-prediction \
