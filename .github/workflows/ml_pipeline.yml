@@ -22,40 +22,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Install build dependencies
+      # Install build dependencies (setuptools, cython, wheel)
       - name: Install build dependencies
         run: |
           pip install --upgrade pip
-          pip install setuptools==59.5.0 cython wheel
-
+          pip install setuptools==59.5.0 cython==0.29.24 wheel
 
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: '3.11'
 
-      - name: Cache Python dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
+      # Install dependencies and force binary wheels for scikit-learn
       - name: Install dependencies
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt --prefer-binary
 
+      # Install system dependencies (gcc, build-essential)
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential gcc
-
-      # Clean pip cache
-      - name: Clear pip cache
-        run: pip cache purge
-
+          sudo apt-get install -y build-essential gcc libatlas-base-dev
 
       # Set up Google Cloud Authentication
       - name: Set up Google Cloud Authentication
@@ -64,7 +52,7 @@ jobs:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
           access_token_scopes: https://www.googleapis.com/auth/cloud-platform
 
-      # Run data processing and model training (your existing steps)
+      # Run data processing and model training
       - name: Run data processing
         run: |
           export PYTHONPATH=$(pwd)/src:$PYTHONPATH
@@ -75,28 +63,33 @@ jobs:
           export PYTHONPATH=$(pwd)/src:$PYTHONPATH
           python src/CreditRisk/components/model_training.py
 
-      # Docker and Google Cloud Setup (your existing steps)
+      # Set up Google Cloud SDK
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v3
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           version: latest
 
+      # Configure Docker with Artifact Registry
       - name: Configure Docker with Artifact Registry
         run: |
           gcloud auth configure-docker us-central1-docker.pkg.dev
 
+      # Set up Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
+      # Build Docker image
       - name: Build Docker image
         run: |
           docker build -t ${{ env.IMAGE_TAG }} .
 
+      # Push Docker image to Artifact Registry
       - name: Push Docker image to Artifact Registry
         run: |
           docker push ${{ env.IMAGE_TAG }}
 
+      # Deploy to Cloud Run
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy credit-prediction \
