@@ -9,20 +9,29 @@ on:
       - main
 
 env:
-    PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-    GCP_SA_KEY: ${{secrets.GCP_SA_KEY }}
-    ARTIFACT_REGISTRY_URL: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/my-repo/credit-card-risk-prediction
-    IMAGE_TAG: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/my-repo/credit-card-risk-prediction:${{ github.sha }}
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+  ARTIFACT_REGISTRY_URL: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/my-repo/credit-card-risk-prediction
+  IMAGE_TAG: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/my-repo/credit-card-risk-prediction:${{ github.sha }}
+  REGION: us-central1  # Define the region for Cloud Run
 
 jobs:
-  build_and_push_image:
+  # Build job: Install dependencies and build Docker image
+  build:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Install build dependencies (setuptools, cython, wheel)
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
       - name: Install build dependencies
         run: |
           pip install --upgrade pip
@@ -33,27 +42,41 @@ jobs:
         with:
           python-version: '3.11'
 
-      # Install dependencies and force binary wheels for scikit-learn
       - name: Install dependencies
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt --prefer-binary --no-cache-dir
 
-      # Install system dependencies (gcc, build-essential)
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential gcc libatlas-base-dev
-          sudo apt-get install -y libatlas-base-dev gfortran
+          sudo apt-get install -y build-essential gcc libatlas-base-dev gfortran liblapack-dev
 
-      # Set up Google Cloud Authentication
-      - name: Set up Google Cloud Authentication
-        uses: google-github-actions/auth@v3
-        with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
-          access_token_scopes: https://www.googleapis.com/auth/cloud-platform
+  # Develop job: Data ingestion, preprocessing, and model training
+  develop:
+    runs-on: ubuntu-latest
+    needs: build  # Ensure that 'build' job is completed first
 
-      # Run data processing and model training
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Install DVC for data version control (if applicable)
+      - name: Install DVC
+        run: |
+          pip install dvc[gcp]
+
+      # Pull data using DVC
+      - name: Run data Ingestion
+        run: |
+          dvc pull artifacts/raw/train.csv
+          if [ ! -f "artifacts/raw/train.csv" ]; then
+            echo "train.csv not found!";
+            exit 1;
+          fi
+          export PYTHONPATH=$(pwd)/src:$PYTHONPATH
+          python src/CreditRisk/components/data_ingestion.py
+
       - name: Run data processing
         run: |
           export PYTHONPATH=$(pwd)/src:$PYTHONPATH
@@ -63,6 +86,22 @@ jobs:
         run: |
           export PYTHONPATH=$(pwd)/src:$PYTHONPATH
           python src/CreditRisk/components/model_training.py
+
+  # Deploy job: Deploy to Google Cloud Run
+  deploy:
+    runs-on: ubuntu-latest
+    needs: develop  # Ensure 'develop' job is completed first
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up Google Cloud Authentication
+      - name: Set up Google Cloud Authentication
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          access_token_scopes: https://www.googleapis.com/auth/cloud-platform
 
       # Set up Google Cloud SDK
       - name: Set up Google Cloud SDK

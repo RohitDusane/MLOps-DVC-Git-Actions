@@ -9,7 +9,7 @@ class PredictionPipeline:
 
         # You should define or load the feature names that were used during training
         self.features = [
-            'credit_score', 'credit_limit_used', 'prev_defaults', 
+            'credit_score', 'credit_limit_used(%)', 'prev_defaults', 
             'default_in_last_6months', 'no_of_days_employed', 
             'yearly_debt_payments', 'age', 'net_yearly_income', 
             'credit_limit', 'owns_car'
