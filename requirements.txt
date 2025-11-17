@@ -4,7 +4,7 @@
 scikit-learn==1.0.2
 Cython==0.29.24
 pandas
-numpy
+numpy==1.21.5
 matplotlib
 seaborn
 joblib

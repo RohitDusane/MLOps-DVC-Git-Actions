@@ -14,7 +14,6 @@ env:
     ARTIFACT_REGISTRY_URL: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/my-repo/credit-card-risk-prediction
     IMAGE_TAG: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/my-repo/credit-card-risk-prediction:${{ github.sha }}
 
-
 jobs:
   build_and_push_image:
     runs-on: ubuntu-latest
@@ -27,7 +26,7 @@ jobs:
       - name: Install build dependencies
         run: |
           pip install --upgrade pip
-          pip install wheel cython
+          pip install setuptools cython wheel
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -44,7 +43,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install --upgrade pip setuptools
+          pip install --upgrade pip
           pip install -r requirements.txt --prefer-binary
 
       # Set up Google Cloud Authentication

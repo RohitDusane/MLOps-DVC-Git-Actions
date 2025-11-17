@@ -8,7 +8,8 @@ WORKDIR /app
 COPY . /app
 
 # Install system build dependencies for compiling scikit-learn from source if necessary
-RUN apt-get update && apt-get install -y
+RUN apt-get update && \
+    apt-get install -y build-essential gcc
 #     build-essential \
 #     libopenblas-dev \
 #     python3-dev \
