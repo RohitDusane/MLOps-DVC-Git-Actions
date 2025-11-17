@@ -37,13 +37,14 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install -r requirements.txt --prefer-binary
+          pip install -r requirements.txt --prefer-binary --no-cache-dir
 
       # Install system dependencies (gcc, build-essential)
       - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential gcc libatlas-base-dev
+          sudo apt-get install -y libatlas-base-dev gfortran
 
       # Set up Google Cloud Authentication
       - name: Set up Google Cloud Authentication
