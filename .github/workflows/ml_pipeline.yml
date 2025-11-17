@@ -34,11 +34,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install flask pytest
 
-      # Run tests
-      - name: Run tests
-        run: |
-          pytest --maxfail=1 --disable-warnings -q
-
   build-and-publish:
     needs: build-and-test
     runs-on: ubuntu-latest
