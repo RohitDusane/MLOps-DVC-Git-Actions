@@ -26,7 +26,8 @@ jobs:
       - name: Install build dependencies
         run: |
           pip install --upgrade pip
-          pip install setuptools cython wheel
+          pip install setuptools==59.5.0 cython wheel
+
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -45,6 +46,16 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt --prefer-binary
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential gcc
+
+      # Clean pip cache
+      - name: Clear pip cache
+        run: pip cache purge
+
 
       # Set up Google Cloud Authentication
       - name: Set up Google Cloud Authentication
