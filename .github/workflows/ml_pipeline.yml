@@ -1,97 +1,88 @@
-name: CI/CD Deployment to GCP
+name: GITHUB ACTIONS CICD-DOCKER
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
 
 env:
-    PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-    GCP_SA_KEY: ${{secrets.GCP_SA_KEY }}
-    ARTIFACT_REGISTRY_URL: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/my-repo/credit-card-risk-prediction
-    IMAGE_TAG: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/my-repo/credit-card-risk-prediction:${{ github.sha }}
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}  # Ensure this is the actual JSON key
+  ARTIFACT_REGISTRY_URL: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/my-repo/credit-prediction
+  IMAGE_TAG: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/my-repo/credit-prediction:v1.0
+  REGION: us-central1
 
 jobs:
-  build_and_push_image:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      # Checkout Code
+      - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Cache pip dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-
-      # Install build dependencies (setuptools, cython, wheel)
-      - name: Install build dependencies
-        run: |
-          pip install --upgrade pip
-          pip install setuptools==59.5.0 cython==0.29.24 wheel
-
+      # Set up Python
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
-      # Install dependencies and force binary wheels for scikit-learn
+      # Install dependencies
       - name: Install dependencies
         run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt --prefer-binary --no-cache-dir
+          python -m pip install --upgrade pip
+          pip install flask pytest
 
-      # Install system dependencies (gcc, build-essential)
-      - name: Install system dependencies
+      # Run tests
+      - name: Run tests
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential gcc libatlas-base-dev
-          sudo apt-get install -y libatlas-base-dev gfortran
+          pytest --maxfail=1 --disable-warnings -q
 
-      # Set up Google Cloud Authentication
-      - name: Set up Google Cloud Authentication
-        uses: google-github-actions/auth@v3
-        with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
-          access_token_scopes: https://www.googleapis.com/auth/cloud-platform
+  build-and-publish:
+    needs: build-and-test
+    runs-on: ubuntu-latest
 
-      # Run data processing and model training
-          # dvc pull artifacts/raw/train.csv
-      - name: Run data Ingestion
-        run: |
-          export PYTHONPATH=$(pwd)/src:$PYTHONPATH
-          python src/CreditRisk/components/data_ingestion.py
+    steps:
+      # Checkout Code
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-      - name: Run data processing
-        run: |
-          export PYTHONPATH=$(pwd)/src:$PYTHONPATH
-          python src/CreditRisk/components/data_preprocessing.py
-
-      - name: Run model training
-        run: |
-          export PYTHONPATH=$(pwd)/src:$PYTHONPATH
-          python src/CreditRisk/components/model_training.py
-
-      # Set up Google Cloud SDK
-      - name: Set up Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v3
+      # Set up Google Cloud Authentication using the service account key
+      - name: Set up Google Cloud SDK and authenticate
+        uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
-          version: latest
+          credentials_json: ${{ secrets.GCP_SA_KEY }}  # Use secret for authentication
 
-      # Configure Docker with Artifact Registry
+      # Install DVC
+      - name: Install DVC
+        run: |
+          pip3 install dvc[gcp]
+
+      # Authenticate DVC with the Google Cloud service account
+      - name: DVC authentication
+        run: |
+          dvc remote modify myremote --local gdrive_use_service_account true
+          dvc remote modify myremote --local gdrive_service_account_json ${{ secrets.GCP_SA_KEY }}
+
+      # Run DVC pull (or push)
+      - name: DVC pull
+        run: dvc pull
+
+      # Debug the environment variables (without exposing sensitive secrets)
+      - name: Debug - Check Environment Variables
+        run: |
+          echo "PROJECT_ID: $PROJECT_ID"
+          echo "ARTIFACT_REGISTRY_URL: $ARTIFACT_REGISTRY_URL"
+          echo "IMAGE_TAG: $IMAGE_TAG"
+
+      # Authenticate Docker to use Artifact Registry
       - name: Configure Docker with Artifact Registry
         run: |
           gcloud auth configure-docker us-central1-docker.pkg.dev
 
-      # Set up Docker Buildx
+      # Set up Docker Buildx for multi-platform builds
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
