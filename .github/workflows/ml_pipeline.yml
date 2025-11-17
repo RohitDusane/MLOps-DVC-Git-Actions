@@ -8,7 +8,7 @@ on:
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}  # Ensure this is the actual JSON key
+  GCP_SA_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}  # Ensure this is the actual JSON key
   ARTIFACT_REGISTRY_URL: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/my-repo/credit-prediction
   IMAGE_TAG: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/my-repo/credit-prediction:v1.0
   REGION: us-central1
