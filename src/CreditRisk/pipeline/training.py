@@ -5,18 +5,18 @@ from src.CreditRisk.config.path_config import *
 from src.CreditRisk.utils.common import read_yaml
 from src.CreditRisk.config.params import *
 
-from src.CreditRisk.components.data_ingestion import DataIngestion
+# from src.CreditRisk.components.data_ingestion import DataIngestion
 from src.CreditRisk.components.data_preprocessing import DataPreprocessing
 from src.CreditRisk.components.model_training import ModelTraining
-
+     
 def main():
     try:
         logging.info(f'>>>>>>>>>> ML PIPELINE <<<<<<<<<<')
         # Load config
         logging.info('>>>>>>>>>> Step 1: DATA INGESTION <<<<<<<<<<')
-        config = read_yaml(CONFIG_PATH)
-        data_ingestion = DataIngestion(config)
-        data_ingestion.run()
+        # config = read_yaml(CONFIG_PATH)
+        # data_ingestion = DataIngestion(config)
+        # data_ingestion.run()
 
         logging.info('>>>>>>>>>> Step 2: DATA PREPROCESSING <<<<<<<<<<')
         config = read_yaml(CONFIG_PATH)

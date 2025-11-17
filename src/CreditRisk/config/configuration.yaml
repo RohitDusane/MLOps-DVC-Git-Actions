@@ -1,4 +1,5 @@
 # Congifuration details for the project
+artifacts_root: artifacts
 
 data_ingestion:
   bucket_name: "my_credit_buck"
