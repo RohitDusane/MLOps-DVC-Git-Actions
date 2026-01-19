@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Production-grade CI/CD pipeline for automated ML model deployment to Google Cloud Platform with zero downtime and serverless scaling.">
+    <meta name="keywords" content="MLOps, CI/CD, GCP, Cloud Run, Docker, GitHub Actions, ML deployment, model serving, automated deployment">
+    <meta name="author" content="Rohit Dusane">
+    <meta property="og:title" content="CI/CD ML Model Deployment - Automated MLOps Pipeline">
+    <meta property="og:description" content="Zero-manual-intervention ML deployment pipeline with automated testing, Docker containerization, and serverless scaling on GCP.">
+    <meta property="og:type" content="website">
+    <title>CI/CD ML Model Deployment - MLOps Pipeline on GCP</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Mermaid for diagrams -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #4facfe;
+            --secondary-color: #00f2fe;
+            --accent-color: #7b2ff7;
+            --bg-dark: #0f172a;
+            --bg-darker: #020617;
+            --bg-card: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #64748b;
+            --border-color: rgba(148, 163, 184, 0.1);
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-secondary: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.2);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-darker);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .gradient-text {
+        background-clip: text;         /* Standard property */
+        -webkit-background-clip: text; /* WebKit (Chrome, Safari) */
+
+        color: transparent;            /* Standard */
+        -webkit-text-fill-color: transparent;
+        }
+
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--gradient-secondary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        .cta-button {
+            background: var(--gradient-secondary);
+            color: white;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(79, 172, 254, 0.3);
+        }
+
+        .scroll-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: var(--gradient-secondary);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6rem 2rem 4rem;
+            background: radial-gradient(ellipse at top, rgba(79, 172, 254, 0.1), transparent),
+                        radial-gradient(ellipse at bottom, rgba(123, 47, 247, 0.1), transparent);
+            position: relative;
+        }
+
+        .hero-content {
+            max-width: 900px;
+            text-align: center;
+        }
+
+        .hero-title {
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+            background: var(--gradient-secondary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            line-height: 1.6;
+        }
+
+        .hero-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+            overflow-x: auto;     /* allow horizontal scroll */
+            white-space: nowrap; /* keep items on one line */
+
+        }
+
+        .badge {
+            background: rgba(79, 172, 254, 0.1);
+            border: 1px solid rgba(79, 172, 254, 0.3);
+            padding: 0.6rem 1.2rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+        }
+
+        .btn-primary, .btn-secondary {
+            padding: 1rem 2.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: var(--gradient-secondary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(79, 172, 254, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(79, 172, 254, 0.1);
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(79, 172, 254, 0.2);
+        }
+
+        /* Stats Section */
+        .stats {
+            padding: 4rem 2rem;
+            background: rgba(30, 41, 59, 0.3);
+        }
+
+        .stats-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: var(--gradient-secondary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        /* Section Styles */
+        .section {
+            padding: 6rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 3rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 1rem;
+            background: var(--gradient-secondary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1.3rem;
+            margin-bottom: 4rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            padding: 2.5rem;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-color);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .feature-description {
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        /* Diagram Container */
+        .diagram-container {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            margin: 2rem 0;
+        }
+
+        .mermaid {
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Tech Stack */
+        .tech-category {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+
+        .tech-category-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .tech-list {
+            list-style: none;
+        }
+
+        .tech-item {
+            padding: 0.8rem 0;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tech-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Code Block */
+        .code-block {
+            background: var(--bg-darker);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 1.5rem 0;
+            border: 1px solid var(--border-color);
+        }
+
+        .code-header {
+            background: rgba(79, 172, 254, 0.1);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .code-language {
+            color: var(--primary-color);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .copy-button {
+            background: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+
+        .copy-button:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        pre {
+            padding: 1.5rem;
+            overflow-x: auto;
+        }
+
+        code {
+            color: var(--text-secondary);
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* Steps */
+        .steps-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .step {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: var(--gradient-secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .step-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.8rem;
+            color: var(--text-primary);
+        }
+
+        .step-content p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            line-height: 1.7;
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .metric-card {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 3rem;
+            font-weight: 900;
+            background: var(--gradient-secondary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-color);
+            padding: 4rem 2rem 2rem;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-section h3 {
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-section p {
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .social-link {
+            width: 40px;
+            height: 40px;
+            background: rgba(79, 172, 254, 0.1);
+            border: 1px solid var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            transition: all 0.3s;
+        }
+
+        .social-link:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Back to Top */
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            font-size: 1.5rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s;
+            z-index: 999;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .back-to-top:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(79, 172, 254, 0.4);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.2rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .step {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav-container">
+            <div class="logo">
+                <span class="logo-icon">🚀</span>
+                <span>MLOps CI/CD Pipeline</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#overview" class="nav-link">Overview</a></li>
+                <li><a href="#architecture" class="nav-link">Architecture</a></li>
+                <li><a href="#pipeline" class="nav-link">Pipeline</a></li>
+                <li><a href="#deployment" class="nav-link">Deployment</a></li>
+                <li><a href="#getting-started" class="nav-link">Get Started</a></li>
+                <li><a href="https://github.com/RohitDusane/MLOps-DVC-Git-Actions" class="cta-button">GitHub</a></li>
+            </ul>
+        </nav>
+        <div class="scroll-progress"></div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h2 class="hero-title">CI/CD ML Model Deployment</h2>
+            <p class="hero-subtitle">
+                Production-grade automated pipeline deploying ML models to Google Cloud Platform 
+                with zero manual intervention, Docker containerization, and serverless infinite scaling
+            </p>
+            
+            <div class="hero-badges">
+                <span class="badge">🤖 100% Automated</span>
+                <span class="badge">🐳 Docker</span>
+                <span class="badge">☁️ GCP Cloud Run</span>
+                <span class="badge">🔄 GitHub Actions</span>
+                <span class="badge">♾️ Infinite Scale</span>
+                <span class="badge">🚀 Zero Downtime</span>
+            </div>
+            
+            <div class="hero-actions">
+                <a href="https://credit-prediction-633955725631.us-central1.run.app/" target="_blank" class="btn-primary">
+                    🎯 Live Demo
+                </a>
+                <a href="https://github.com/RohitDusane/MLOps-DVC-Git-Actions" target="_blank" class="btn-secondary">
+                    📖 View on GitHub
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="stats-container">
+            <div class="stat-item">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Automation Rate</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">0</div>
+                <div class="stat-label">Manual Steps Required</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">∞</div>
+                <div class="stat-label">Scalability</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">< 5min</div>
+                <div class="stat-label">Deployment Time</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Overview Section -->
+    <section id="overview" class="section">
+        <h2 class="section-title">Overview</h2>
+        <p class="section-subtitle">
+            An enterprise-grade MLOps pipeline that automates the entire journey from code commit to production deployment 
+            with comprehensive testing, containerization, and cloud-native serving
+        </p>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3 class="feature-title">Automated CI/CD</h3>
+                <p class="feature-description">
+                    Complete automation using GitHub Actions for continuous integration and deployment. 
+                    Triggered automatically on every commit to main branch with comprehensive testing, 
+                    building, and deployment stages executed in parallel for maximum efficiency.
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🐳</div>
+                <h3 class="feature-title">Docker Containerization</h3>
+                <p class="feature-description">
+                    Multi-stage Docker builds optimized for production with minimal image size. 
+                    Includes model artifacts, dependencies, and serving infrastructure in a single 
+                    portable container. Versioned images stored in GCP Artifact Registry.
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">☁️</div>
+                <h3 class="feature-title">Serverless Deployment</h3>
+                <p class="feature-description">
+                    Deploy to GCP Cloud Run for fully managed serverless compute. 
+                    Automatic scaling from zero to thousands of instances based on traffic. 
+                    Pay only for what you use with per-request billing and built-in load balancing.
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <h3 class="feature-title">Secure & Compliant</h3>
+                <p class="feature-description">
+                    Enterprise security with Google Workload Identity for authentication. 
+                    Secrets managed via GitHub Secrets and GCP Secret Manager. 
+                    HTTPS endpoints with automatic SSL certificates and DDoS protection.
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3 class="feature-title">Model Versioning</h3>
+                <p class="feature-description">
+                    Complete version control with DVC for data and models. 
+                    Every deployment tagged with Git commit SHA for full traceability. 
+                    Rollback capability to any previous version with single command.
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3 class="feature-title">Production Ready</h3>
+                <p class="feature-description">
+                    Health checks, logging, monitoring, and error handling built-in. 
+                    Fast API endpoints with automatic request validation and OpenAPI documentation. 
+                    Graceful degradation and circuit breaker patterns implemented.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Architecture Section -->
+    <section id="architecture" class="section">
+        <h2 class="section-title">System Architecture</h2>
+        <p class="section-subtitle">
+            Cloud-native architecture leveraging GCP services for scalable, reliable ML model serving
+        </p>
+        
+        <div class="diagram-container">
+            <div class="mermaid">
+                graph TB
+                    subgraph "Development"
+                        DEV[Developer] --> CODE[Code Changes]
+                        CODE --> GIT[Git Push]
+                    end
+
+                    subgraph "CI/CD Pipeline - GitHub Actions"
+                        GIT --> TRIGGER[Workflow Trigger]
+                        TRIGGER --> TEST[Run Tests]
+                        TEST --> BUILD[Build Docker Image]
+                        BUILD --> SCAN[Security Scan]
+                        SCAN --> TAG[Tag with SHA]
+                        TAG --> PUSH[Push to Artifact Registry]
+                    end
+
+                    subgraph "Google Cloud Platform"
+                        PUSH --> AR[Artifact Registry]
+                        AR --> CR[Cloud Run Service]
+                        CR --> LB[Load Balancer]
+                        LB --> AUTO[Auto Scaling]
+                        AUTO --> INST[Container Instances]
+                    end
+
+                    subgraph "Monitoring & Ops"
+                        INST --> LOGS[Cloud Logging]
+                        INST --> METRICS[Cloud Monitoring]
+                        INST --> TRACE[Cloud Trace]
+                    end
+
+                    subgraph "Clients"
+                        USER[End Users] --> HTTPS[HTTPS Endpoint]
+                        HTTPS --> LB
+                    end
+
+                    style CODE fill:#667eea
+                    style BUILD fill:#4facfe
+                    style CR fill:#10b981
+                    style INST fill:#f59e0b
+            </div>
+        </div>
+
+        <div class="metrics-grid" style="margin-top: 4rem;">
+            <div class="metric-card">
+                <div class="metric-value">5</div>
+                <div class="metric-label">GCP Services</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">3</div>
+                <div class="metric-label">CI/CD Stages</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">0</div>
+                <div class="metric-label">Downtime</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">99.9%</div>
+                <div class="metric-label">Uptime SLA</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pipeline Section -->
+    <section id="pipeline" class="section">
+        <h2 class="section-title">CI/CD Pipeline</h2>
+        <p class="section-subtitle">
+            Fully automated deployment workflow from code commit to production
+        </p>
+        
+        <div class="diagram-container">
+            <div class="mermaid">
+sequenceDiagram
+    participant Dev as Developer
+    participant GH as GitHub
+    participant GA as GitHub Actions
+    participant AR as Artifact Registry
+    participant CR as Cloud Run
+    participant User as End Users
+
+    Dev->>GH: git push origin main
+    GH->>GA: Trigger Workflow
+    GA->>GA: Checkout Code
+    GA->>GA: Set up Python Environment
+    GA->>GA: Install Dependencies
+    GA->>GA: Run Unit Tests
+    GA->>GA: Run Integration Tests
+    GA->>GA: Build Docker Image
+    GA->>GA: Security Scan (Trivy)
+    GA->>AR: Push Image (tagged with SHA)
+    GA->>CR: Deploy New Revision
+    CR->>CR: Pull Image from AR
+    CR->>CR: Start Container Instances
+    CR->>CR: Health Check
+    CR->>CR: Route Traffic to New Revision
+    CR->>User: Service Live & Ready
+    User->>CR: API Requests
+    CR->>User: Model Predictions
+            </div>
+        </div>
+
+        <div style="margin-top: 4rem;">
+            <h3 style="font-size: 2rem; margin-bottom: 2rem; text-align: center;">Pipeline Stages</h3>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">1️⃣</div>
+                    <h3 class="feature-title">Build & Test</h3>
+                    <p class="feature-description">
+                        • Automated testing (unit, integration)<br>
+                        • Code quality checks (linting, formatting)<br>
+                        • Dependency vulnerability scanning<br>
+                        • Model validation tests<br>
+                        • Performance benchmarking
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">2️⃣</div>
+                    <h3 class="feature-title">Containerize</h3>
+                    <p class="feature-description">
+                        • Multi-stage Docker build<br>
+                        • Optimized layer caching<br>
+                        • Security vulnerability scanning<br>
+                        • Image signing & verification<br>
+                        • Push to Artifact Registry
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">3️⃣</div>
+                    <h3 class="feature-title">Deploy & Serve</h3>
+                    <p class="feature-description">
+                        • Zero-downtime deployment<br>
+                        • Automatic traffic routing<br>
+                        • Health check validation<br>
+                        • Rollback on failure<br>
+                        • Production monitoring
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Deployment Section -->
+    <section id="deployment" class="section">
+        <h2 class="section-title">Technology Stack</h2>
+        <p class="section-subtitle">
+            Built with industry-leading tools and cloud-native technologies
+        </p>
+        
+        <div class="features-grid">
+            <div class="tech-category">
+                <h3 class="tech-category-title">🔄 CI/CD & Version Control</h3>
+                <ul class="tech-list">
+                    <li class="tech-item">📦 GitHub - Source code management</li>
+                    <li class="tech-item">🔄 GitHub Actions - CI/CD automation</li>
+                    <li class="tech-item">📊 DVC - Data & model versioning</li>
+                    <li class="tech-item">🏷️ Git - Version control system</li>
+                </ul>
+            </div>
+            
+            <div class="tech-category">
+                <h3 class="tech-category-title">🐳 Containerization</h3>
+                <ul class="tech-list">
+                    <li class="tech-item">🐳 Docker - Container platform</li>
+                    <li class="tech-item">📦 Multi-stage builds - Optimized images</li>
+                    <li class="tech-item">🔒 Trivy - Security scanning</li>
+                </ul>
+            </div>
+            
+            <div class="tech-category">
+                <h3 class="tech-category-title">☁️ Google Cloud Platform</h3>
+                <ul class="tech-list">
+                    <li class="tech-item">🚀 Cloud Run - Serverless container platform</li>
+                    <li class="tech-item">📦 Artifact Registry - Container registry</li>
+                    <li class="tech-item">🔐 Workload Identity - Authentication</li>
+                    <li class="tech-item">📊 Cloud Monitoring - Observability</li>
+                    <li class="tech-item">📝 Cloud Logging - Log management</li>
+                </ul>
+            </div>
+            
+            <div class="tech-category">
+                <h3 class="tech-category-title">🤖 ML & API</h3>
+                <ul class="tech-list">
+                    <li class="tech-item">⚡ FastAPI - Modern API framework</li>
+                    <li class="tech-item">🐍 Python - Programming language</li>
+                    <li class="tech-item">📊 Scikit-learn - ML library</li>
+                    <li class="tech-item">🔢 Pandas - Data manipulation</li>
+                    <li class="tech-item">📈 NumPy - Numerical computing</li>
+                </ul>
+            </div>
+        </div>
+
+        <div style="margin-top: 4rem;">
+            <h3 style="font-size: 2rem; margin-bottom: 2rem; text-align: center;">Key Features</h3>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3 class="feature-title">Instant Deployment</h3>
+                    <p class="feature-description">
+                        From git push to production in under 5 minutes. Fully automated pipeline 
+                        with parallel testing, building, and deployment stages for maximum speed.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">♾️</div>
+                    <h3 class="feature-title">Infinite Scalability</h3>
+                    <p class="feature-description">
+                        Cloud Run automatically scales from zero to thousands of instances. 
+                        Handle traffic spikes effortlessly with per-request autoscaling.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">💰</div>
+                    <h3 class="feature-title">Cost Optimized</h3>
+                    <p class="feature-description">
+                        Pay only for actual requests. Scale to zero when idle. No charges for 
+                        idle time, making it perfect for development and staging environments.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🔐</div>
+                    <h3 class="feature-title">Enterprise Security</h3>
+                    <p class="feature-description">
+                        Built-in DDoS protection, automatic HTTPS, Workload Identity for 
+                        authentication, and vulnerability scanning at every deployment.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3 class="feature-title">Full Observability</h3>
+                    <p class="feature-description">
+                        Integrated logging and monitoring with Cloud Logging and Cloud Monitoring. 
+                        Track metrics, logs, and traces in real-time.
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3 class="feature-title">Zero Downtime</h3>
+                    <p class="feature-description">
+                        Blue-green deployments with automatic traffic switching. Health checks 
+                        ensure new versions are stable before routing traffic.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Getting Started Section -->
+    <section id="getting-started" class="section">
+        <h2 class="section-title">Getting Started</h2>
+        <p class="section-subtitle">
+            Deploy your ML model to production in minutes with this step-by-step guide
+        </p>
+        
+        <div class="steps-container">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Clone the Repository</h3>
+                    <p>Get started by cloning the repository and setting up your local environment</p>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-language">bash</span>
+                            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+                        </div>
+                        <pre><code>git clone https://github.com/RohitDusane/MLOps-DVC-Git-Actions.git
+cd MLOps-DVC-Git-Actions</code></pre>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>Set Up GCP Project</h3>
+                    <p>Create a new GCP project and enable required APIs</p>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-language">bash</span>
+                            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+                        </div>
+                        <pre><code># Create project
+gcloud projects create YOUR_PROJECT_ID
+
+# Enable APIs
+gcloud services enable run.googleapis.com
+gcloud services enable artifactregistry.googleapis.com
+gcloud services enable cloudbuild.googleapis.com</code></pre>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>Configure GitHub Secrets</h3>
+                    <p>Add GCP credentials to GitHub repository secrets for CI/CD</p>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-language">yaml</span>
+                            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+                        </div>
+                        <pre><code># Required GitHub Secrets:
+GCP_PROJECT_ID: your-project-id
+GCP_SA_KEY: service-account-json-key
+GCP_REGION: us-central1
+SERVICE_NAME: ml-model-service</code></pre>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h3>Train Your Model</h3>
+                    <p>Train your ML model locally or use the provided example model</p>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-language">bash</span>
+                            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+                        </div>
+                        <pre><code># Install dependencies
+pip install -r requirements.txt
+
+# Train model
+python src/train.py
+
+# Test API locally
+uvicorn app:app --reload</code></pre>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">5</div>
+                <div class="step-content">
+                    <h3>Deploy to Production</h3>
+                    <p>Push to main branch to trigger automatic deployment</p>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-language">bash</span>
+                            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+                        </div>
+                        <pre><code>git add .
+git commit -m "Deploy ML model"
+git push origin main
+
+# GitHub Actions will automatically:
+# 1. Run tests
+# 2. Build Docker image
+# 3. Push to Artifact Registry
+# 4. Deploy to Cloud Run</code></pre>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">6</div>
+                <div class="step-content">
+                    <h3>Access Your API</h3>
+                    <p>Once deployed, your API will be available at the Cloud Run URL</p>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="code-language">bash</span>
+                            <button class="copy-button" onclick="copyCode(this)">📋 Copy</button>
+                        </div>
+                        <pre><code># Test your deployed API
+curl -X POST https://your-service-url.run.app/predict \
+  -H "Content-Type: application/json" \
+  -d '{"features": [1, 2, 3, 4, 5]}'
+
+# View API documentation
+open https://your-service-url.run.app/docs</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 4rem; padding: 2rem; background: rgba(79, 172, 254, 0.1); border-radius: 12px; border: 1px solid rgba(79, 172, 254, 0.3);">
+            <h3 style="margin-bottom: 1rem; font-size: 1.5rem;">🎯 Live Demo</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                Try out the deployed credit prediction model with real-time inference
+            </p>
+            <a href="https://credit-prediction-633955725631.us-central1.run.app/" target="_blank" 
+               style="display: inline-block; padding: 1rem 2rem; background: var(--gradient-secondary); 
+                      color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
+                🚀 Try Live Demo
+            </a>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section class="section" style="background: rgba(30, 41, 59, 0.3); border-radius: 16px; padding: 4rem 2rem;">
+        <h2 class="section-title">Why This Architecture?</h2>
+        <p class="section-subtitle">
+            Designed for production-grade ML deployment with best practices
+        </p>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">⚙️</div>
+                <h3 class="feature-title">Full Automation</h3>
+                <p class="feature-description">
+                    Zero manual steps from commit to production. GitHub Actions handles 
+                    testing, building, scanning, and deployment automatically.
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🔍</div>
+                <h3 class="feature-title">Quality Assurance</h3>
+                <p class="feature-description">
+                    Automated testing, linting, and security scanning at every stage. 
+                    Deployments only proceed if all checks pass.
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">📈</div>
+                <h3 class="feature-title">Scalability</h3>
+                <p class="feature-description">
+                    Serverless architecture scales automatically based on demand. 
+                    Handle 1 request or 1 million without configuration changes.
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">💻</div>
+                <h3 class="feature-title">Developer Experience</h3>
+                <p class="feature-description">
+                    Simple workflow: code, commit, push. No complex deployment procedures 
+                    or manual server configuration required.
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🛡️</div>
+                <h3 class="feature-title">Reliability</h3>
+                <p class="feature-description">
+                    Built-in health checks, automatic rollbacks, and zero-downtime deployments 
+                    ensure your service is always available.
+                </p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3 class="feature-title">Observability</h3>
+                <p class="feature-description">
+                    Comprehensive logging and monitoring with GCP's native tools. 
+                    Track every request, error, and performance metric.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>About</h3>
+                <p style="color: var(--text-secondary); line-height: 1.6; margin-top: 1rem;">
+                    A production-grade CI/CD pipeline for automated ML model deployment to Google Cloud Platform 
+                    with zero manual intervention and serverless scaling.
+                </p>
+                <div class="social-links">
+                    <a href="https://github.com/RohitDusane/MLOps-DVC-Git-Actions" class="social-link" title="GitHub">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul class="footer-links">
+                    <li><a href="#overview">Overview</a></li>
+                    <li><a href="#architecture">Architecture</a></li>
+                    <li><a href="#pipeline">Pipeline</a></li>
+                    <li><a href="#deployment">Deployment</a></li>
+                    <li><a href="#getting-started">Getting Started</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Resources</h3>
+                <ul class="footer-links">
+                    <li><a href="https://github.com/RohitDusane/MLOps-DVC-Git-Actions">GitHub Repository</a></li>
+                    <li><a href="https://credit-prediction-633955725631.us-central1.run.app/docs">API Documentation</a></li>
+                    <li><a href="https://cloud.google.com/run">Cloud Run Docs</a></li>
+                    <li><a href="https://docs.github.com/en/actions">GitHub Actions</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Technologies</h3>
+                <ul class="footer-links">
+                    <li><a href="https://fastapi.tiangolo.com/">FastAPI</a></li>
+                    <li><a href="https://www.docker.com/">Docker</a></li>
+                    <li><a href="https://cloud.google.com/">Google Cloud</a></li>
+                    <li><a href="https://dvc.org/">DVC</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2025 CI/CD ML Model Deployment. Open Source Project.</p>
+            <p style="margin-top: 0.5rem;">Created by <a href="https://github.com/RohitDusane" style="color: var(--primary-color);">Rohit Dusane</a></p>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <a href="#" class="back-to-top">↑</a>
+
+    <!-- Scripts -->
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'dark',
+            themeVariables: {
+                primaryColor: '#4facfe',
+                primaryTextColor: '#f1f5f9',
+                primaryBorderColor: '#4facfe',
+                lineColor: '#cbd5e1',
+                secondaryColor: '#1e293b',
+                tertiaryColor: '#0f172a'
+            }
+        });
+
+        // Scroll Progress Bar
+        window.addEventListener('scroll', () => {
+            const windowHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrolled = (window.scrollY / windowHeight) * 100;
+            document.querySelector('.scroll-progress').style.width = scrolled + '%';
+        });
+
+        // Back to Top Button
+        const backToTop = document.querySelector('.back-to-top');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        });
+
+        backToTop.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Copy Code Function
+        function copyCode(button) {
+            const codeBlock = button.closest('.code-block').querySelector('code');
+            const text = codeBlock.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                button.textContent = '✅ Copied!';
+                setTimeout(() => {
+                    button.textContent = '📋 Copy';
+                }, 2000);
+            });
+        }
+
+        // Smooth Scrolling for Navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Animate Stats on Scroll
+        const observerOptions = {
+            threshold: 0.5,
+            rootMargin: '0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const statNumbers = entry.target.querySelectorAll('.stat-number');
+                    statNumbers.forEach(stat => {
+                        const target = stat.dataset.count || stat.textContent;
+                        if (!isNaN(target)) {
+                            animateValue(stat, 0, parseInt(target), 2000);
+                        }
+                    });
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        const statsSection = document.querySelector('.stats');
+        if (statsSection) {
+            observer.observe(statsSection);
+        }
+
+        function animateValue(element, start, end, duration) {
+            const range = end - start;
+            const increment = range / (duration / 16);
+            let current = start;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= end) {
+                    element.textContent = end + (element.dataset.suffix || '');
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(current) + (element.dataset.suffix || '');
+                }
+            }, 16);
+        }
+    </script>
+</body>
+</html>
